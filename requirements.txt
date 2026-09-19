@@ -6,3 +6,5 @@ langchain-ollama
 sentence-transformers
 numpy<2
 python-dotenv
+gradio==4.44.1
+pydantic<2.11
