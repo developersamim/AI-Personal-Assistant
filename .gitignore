@@ -1,0 +1,33 @@
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Local machine files
+.DS_Store
+.idea/
+.vscode/
+
+# Downloaded model cache and generated vector data
+model_cache/
+vector_db/
+*.pkl
+
+# Keep private source data out of the public demo repository
+original-knowledge-base/
+linkedin-post.md
