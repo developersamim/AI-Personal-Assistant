@@ -3,9 +3,12 @@ langchain-text-splitters
 langchain-chroma
 langchain-huggingface
 langchain-ollama
-sentence-transformers
+sentence-transformers>=3.3,<4
 numpy<2
+transformers>=4.41,<5
 python-dotenv
 gradio==4.44.1
-pydantic<2.11
+fastapi==0.115.2
+starlette==0.38.6
 pypdf
+pydantic<2.11

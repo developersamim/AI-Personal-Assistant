@@ -52,8 +52,7 @@ def main():
         ).then(chat, inputs=chatbot, outputs=[chatbot, context_markdown])
 
     ui.launch(
-        share=True,
-        server_port=7861
+        share=True
         )
 
 if __name__ == "__main__":
