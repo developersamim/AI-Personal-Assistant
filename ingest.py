@@ -3,14 +3,18 @@ import glob
 from pathlib import Path
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
 
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-DB_NAME = str(Path(__file__).parent / "vector_db")
+PINECONE_API_KEY = os.environ["PINECONE_API_KEY"]
+PINECONE_INDEX_NAME = "langchain-chunks-index"
+PINECONE_NAMESPACE = "personal"
+
 KNOWLEDGE_BASE = str(Path(__file__).parent / "knowledge-base")
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
@@ -36,21 +40,37 @@ def create_chunks(documents):
     chunks = text_splitter.split_documents(documents)
     return chunks
 
-def create_embeddings(chunks):
-    if os.path.exists(DB_NAME):
-        Chroma(persist_directory=DB_NAME, embedding_function=embeddings).delete_collection()
+def get_pinecone_index():
+    pinecone = Pinecone(api_key=PINECONE_API_KEY)
 
-    vectorstore = Chroma.from_documents(
-        documents=chunks, embedding=embeddings, persist_directory=DB_NAME
+    if not pinecone.has_index(PINECONE_INDEX_NAME):
+        pinecone.create_index(
+            name=PINECONE_INDEX_NAME,
+            dimension=384,
+            metric="cosine",
+            spec=ServerlessSpec(
+                cloud="aws",
+                region="us-east-1"
+            )
+        )
+    return pinecone.Index(PINECONE_INDEX_NAME)
+
+def create_embeddings(chunks):
+    index = get_pinecone_index()
+
+    stats = index.describe_index_stats()
+    if PINECONE_NAMESPACE in stats.namespaces:
+        index.delete(delete_all=True, namespace=PINECONE_NAMESPACE)
+
+    vectorstore = PineconeVectorStore(
+        embedding=embeddings,
+        index=index,
+        namespace=PINECONE_NAMESPACE,
     )
 
-    collection = vectorstore._collection
-    count = collection.count()
+    vectorstore.add_documents(documents=chunks)
 
-    sample_embedding = collection.get(limit=1, include=["embeddings"])["embeddings"][0]
-    dimensions = len(sample_embedding)
-    print(f"There are {count:,} vectors with {dimensions:,} dimensions in the vector store")
-    return vectorstore
+    print("successfully loaded chunks")
 
 if __name__ == "__main__":
     documents = fetch_documents()

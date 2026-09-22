@@ -1,198 +1,121 @@
 # Personal Assistant
 
-A local retrieval-augmented personal assistant. It reads Markdown files from `knowledge-base/`, stores searchable embeddings in Chroma, and uses Ollama to answer questions locally.
+A retrieval-augmented personal assistant.
 
-## Project Flow
+## macOS Setup with uv
 
-```text
-knowledge-base/*.md -> ingest.py -> vector_db/ -> answer.py -> Ollama response
+Install `uv` if it is not already installed:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Prerequisites
-
-Install the following:
-
-- Python 3.9 or newer
-- Ollama
-- Enough disk space and memory for the Ollama model you choose
-
-Download Ollama from [ollama.com](https://ollama.com/download).
-
-## Setup
-
-### 1. Open the project directory
+Open the project directory:
 
 ```bash
 cd personal_assistant
 ```
 
-### 2. Create a virtual environment
-
-macOS or Linux:
+Install the dependencies:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+uv sync
 ```
 
-Windows PowerShell:
+`uv` uses `pyproject.toml` as the project configuration file. It reads the dependency list from `pyproject.toml` and records resolved versions in `uv.lock`. Do not use `pip` or manage a separate dependency list for this project.
 
-```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Install Python dependencies
-
-macOS or Linux:
+Run document ingestion:
 
 ```bash
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+uv run python ingest.py
 ```
 
-Windows PowerShell:
-
-```powershell
-py -m pip install --upgrade pip
-py -m pip install -r requirements.txt
-```
-
-### 4. Start Ollama
-
-Start Ollama if it is not already running:
+Run the application:
 
 ```bash
-ollama serve
+uv run python app.py
 ```
 
-Keep this terminal open. Use a second terminal for the remaining commands, and activate the virtual environment there as well.
+## Managing Libraries with uv
 
-Ollama normally listens at:
-
-```text
-http://localhost:11434
-```
-
-### 5. Download the chat model
-
-The project is configured to use `gpt-oss:20b`:
+Add a library:
 
 ```bash
-ollama pull gpt-oss:20b
+uv add package-name
 ```
 
-Confirm that the model is installed:
+For example:
 
 ```bash
-ollama list
+uv add langchain-pinecone
 ```
 
-### 6. Add or update personal knowledge
+`uv add` updates `pyproject.toml`, updates `uv.lock`, and installs the library into the project environment.
 
-Put Markdown files in `knowledge-base/`. The existing folders are examples of how content can be organized:
+## Updating Packages with uv
 
-```text
-knowledge-base/
-├── personal/
-│   └── AboutMe.md
-└── schools/
-    ├── BalMandir School.md
-    └── Gautam School.md
-```
-
-Add, edit, or remove `.md` files as needed.
-
-### 7. Build the vector database
-
-Run ingestion after the first setup and every time the knowledge-base changes:
+Update one package to the newest version allowed by its version rule in `pyproject.toml`:
 
 ```bash
-python ingest.py
+uv lock --upgrade-package package-name
+uv sync
 ```
 
-This recreates the local Chroma database in `vector_db/`.
-
-The first run may download the HuggingFace embedding model:
-
-```text
-sentence-transformers/all-MiniLM-L6-v2
-```
-
-### 8. Ask a question
-
-From the project directory, run:
+For example:
 
 ```bash
-python -c 'from answer import answer_question; print(answer_question("What do you know about me?")[0])'
+uv lock --upgrade-package langchain-pinecone
+uv sync
 ```
 
-For another question:
+To change the version rule and update the package at the same time, use `uv add`:
 
 ```bash
-python -c 'from answer import answer_question; print(answer_question("Where did I go to school?")[0])'
+uv add 'langchain-pinecone>=0.2.0'
 ```
 
-On Windows PowerShell, use:
-
-```powershell
-python -c "from answer import answer_question; print(answer_question('What do you know about me?')[0])"
-```
-
-## Updating the Knowledge Base
-
-1. Edit or add Markdown files under `knowledge-base/`.
-2. Run `python ingest.py` to rebuild the vector database.
-3. Run the question command again.
-
-Do not skip the ingestion step after changing the knowledge base, because `answer.py` reads the existing data in `vector_db/`.
-
-## Troubleshooting
-
-### Ollama connection error
-
-Make sure Ollama is running and listening on port `11434`:
+To upgrade all packages within their allowed version ranges:
 
 ```bash
-ollama serve
+uv lock --upgrade
+uv sync
 ```
 
-### Model not found
+Review the changes to `pyproject.toml` and `uv.lock` after upgrading packages. If an upgrade causes compatibility problems, restore the previous dependency rule and synchronize the environment again.
 
-Pull the configured model again:
+Remove a library:
 
 ```bash
-ollama pull gpt-oss:20b
+uv remove package-name
 ```
 
-### No useful answers
-
-Check that the knowledge files are Markdown files under `knowledge-base/`, then rebuild the database:
+For example:
 
 ```bash
-python ingest.py
+uv remove langchain-chroma
 ```
 
-### Python package errors
-
-Make sure the virtual environment is active, then reinstall the dependencies:
+After changing dependencies manually in `pyproject.toml`, synchronize the environment with:
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync
 ```
 
-### Existing vector database is stale
+## Why Specific Package Versions Are Used
 
-Run ingestion again. The ingestion script deletes and recreates the Chroma collection:
+The dependency rules in `pyproject.toml` use exact versions, minimum versions, or upper bounds depending on the package:
 
-```bash
-python ingest.py
-```
+- `gradio>=5.0,<6` keeps the application on the Gradio 5 release line. The application depends on Gradio's component and event APIs, so a major-version upgrade could change the UI behavior.
+- `pydantic>=2.11.1,<2.12` keeps Pydantic compatible with both the Gradio schema handling and the LangChain Pinecone integration used by this project.
+- `langchain-pinecone>=0.2.0` is required because the project uses `PineconeVectorStore` to retrieve and upload vectors.
+- `pinecone>=7.0.0,<8.0.0` keeps the Pinecone SDK within the range supported by the selected LangChain Pinecone integration.
+- `torch==2.2.2` is pinned because the embedding stack depends on PyTorch and changes to its version can affect installation compatibility and model behavior.
+- `sentence-transformers>=3.3,<4` and `transformers>=4.41,<5` keep the embedding libraries on compatible major-version lines.
+- `numpy<2` avoids compatibility problems with packages in the machine-learning and embedding stack that may not support NumPy 2.
+- `fastapi==0.115.2` and `starlette==0.38.6` keep the web framework components aligned with the application environment.
+- `onnxruntime==1.19.2` is pinned for compatibility with the installed Python and embedding dependencies.
+- `requires-python = ">=3.12,<3.13"` keeps the project on Python 3.12, which matches the tested dependency environment.
 
-## Main Files
+These constraints allow `uv` to resolve a compatible environment while `uv.lock` records the exact versions installed. Update packages deliberately rather than removing version bounds without checking compatibility.
 
-- `ingest.py`: loads Markdown files, splits them into chunks, creates embeddings, and rebuilds Chroma.
-- `answer.py`: retrieves relevant chunks and asks the local Ollama model for an answer.
-- `requirements.txt`: Python dependencies.
-- `knowledge-base/`: personal Markdown source files.
-- `vector_db/`: generated local vector database.
+Run ingestion again whenever the files under `knowledge-base/` change.
