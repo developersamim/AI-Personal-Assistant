@@ -1,6 +1,4 @@
-# Alex's Preferences
-
-This is fictional demo data.
+# Alex Reyley Preferences
 
 - Alex prefers concise answers with practical next steps.
 - Alex likes Python, local-first software, and documentation that people can actually follow.

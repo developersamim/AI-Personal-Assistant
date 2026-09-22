@@ -91,8 +91,7 @@ def main():
     ui.launch(
         share=True,
         show_error=True,
-        show_api=False,
-        server_port=7862,
+        show_api=False
     )
 
 if __name__ == "__main__":
