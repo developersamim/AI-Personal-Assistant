@@ -24,6 +24,18 @@ uv sync
 
 `uv` uses `pyproject.toml` as the project configuration file. It reads the dependency list from `pyproject.toml` and records resolved versions in `uv.lock`. Do not use `pip` or manage a separate dependency list for this project.
 
+### Optional requirements.txt Installation
+
+`requirements.txt` is optional and is provided for environments such as deployment services that expect a requirements file. The recommended local workflow is still `uv sync`, which uses `pyproject.toml` and `uv.lock`.
+
+To install the packages from `requirements.txt` with `uv`, run:
+
+```bash
+uv pip install -r requirements.txt
+```
+
+This installs the listed packages into the active environment, but it does not update `pyproject.toml` or `uv.lock`. Use `uv add package-name` when adding a project dependency so the project configuration stays up to date.
+
 Run document ingestion:
 
 ```bash
