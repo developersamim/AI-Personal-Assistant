@@ -1,4 +1,4 @@
-# Personal Assistant
+# Runbook Assistant
 
 A retrieval-augmented personal assistant.
 
