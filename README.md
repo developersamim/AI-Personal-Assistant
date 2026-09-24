@@ -1,6 +1,9 @@
 # Runbook Assistant
 
-A retrieval-augmented personal assistant.
+A retrieval-augmented runbook assistant helps you with following
+- Incident response and troubleshooting
+- Searching runbooks and technical documentation
+- Searching code, architecture decisions, and past incidents
 
 ## macOS Setup with uv
 
