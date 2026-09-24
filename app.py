@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 
 from answer import answer_question
@@ -89,7 +90,9 @@ def main():
         )
 
     ui.launch(
-        share=True,
+        server_name="0.0.0.0",
+        server_port=int(os.environ["PORT"]),
+        share=False,
         show_error=True,
         show_api=False
     )
