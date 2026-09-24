@@ -46,12 +46,12 @@ def main():
     )
 
     with gr.Blocks(
-        title="My Personal Assistant",
+        title="My Runbook Assistant",
         theme=theme,
     ) as ui:
         gr.Markdown(
-            "# My Personal Assistant\n"
-            "Ask me anything about yourself!"
+            "# My Runbook Assistant\n"
+            "Ask me anything about live production issues!"
         )
 
         with gr.Row():
