@@ -90,8 +90,8 @@ def main():
         )
 
     ui.launch(
-        server_name="0.0.0.0",
-        server_port=int(os.environ["PORT"]),
+        server_name=os.environ["GRADIO_SERVER_NAME"],
+        server_port=int(os.environ["GRADIO_SERVER_PORT"]),
         share=False,
         show_error=True,
         show_api=False
