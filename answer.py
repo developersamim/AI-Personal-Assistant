@@ -3,15 +3,12 @@ from pathlib import Path
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.messages import SystemMessage, HumanMessage, convert_to_messages
 from langchain_core.documents import Document
-from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-
-MODEL = "gpt-oss:20b"
-OLLAMA_BASE_URL = "http://localhost:11434"
 
 PINECONE_API_KEY = os.environ["PINECONE_API_KEY"]
 PINECONE_INDEX_NAME = "langchain-chunks-index"
@@ -42,9 +39,8 @@ Context:
 
 
 
-llm = ChatOllama(
-    base_url=OLLAMA_BASE_URL,
-    model=MODEL,
+llm = ChatOpenAI(
+    model="gpt-4.1-mini",
     temperature=0
     )
 

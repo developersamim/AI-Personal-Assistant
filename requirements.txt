@@ -1,7 +1,6 @@
 langchain-community>=0.4.2
 langchain-text-splitters>=1.1.2
 langchain-huggingface>=1.2.2
-langchain-ollama>=1.1.0
 langchain-pinecone>=0.2.0
 pinecone>=7.0.0,<8.0.0
 sentence-transformers>=3.3,<4
@@ -17,3 +16,4 @@ onnxruntime==1.19.2
 torch==2.2.2
 langchain-pinecone>=0.2.0
 pinecone>=7.0.0,<8.0.0
+langchain-openai>=1.6.3
